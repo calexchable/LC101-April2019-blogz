@@ -4,7 +4,7 @@ import cgi
 import os
 
 app = Flask(__name__)
-app.congif[DEBUG] = True
+app.config["DEBUG"] = True
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://build-a-blog:password@localhost:8889/build-a-blog"
 app.config["SQLALCHEMY_ECHO"] = True
 
@@ -53,14 +53,14 @@ def new_post():
 
         new_post = Blog(blog_title, blog_post)
 
-        if error_title = "" and error_post = "":
+        if error_title == "" and error_post == "":
             db.session.add(new_post)
             db.session.commit()
             link = "/blog?id=" + str(new_post.id)
             return redirect(link)
 
         else:
-            return render_template("new_post.html", blog_title=blog_title, blog_post, error_post=error=post, error_title=error_title)
+            return render_template("new_post.html", blog_title=blog_title, blog_post=blog_post, error_post=error_post, error_title=error_title)
 
     else:
         return render_template('new_post.html')
