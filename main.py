@@ -6,7 +6,7 @@ import os
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://build-a-blog:password@localhost:8889/build-a-blog"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://blogz:password@localhost:8889/blogz"
 app.config["SQLALCHEMY_ECHO"] = True
 
 
@@ -16,10 +16,23 @@ class Blog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     blog_title = db.Column(db.String(255))
     blog_post = db.Column(db.String(99999))
+    owner_id = db.Column(db.Integer, db.ForeignKey(User.id))
 
     def __init__(self, blog_title, blog_post):
         self.blog_title = blog_title
         self.blog_post = blog_post
+        self.owner = owner
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(255))
+    password = db.Column(db.String(255))
+    blogs = db.relationship("Blog", backref = "owner")
+
+    def __init__(self, username, password, blogs)
+        self.username = username
+        self.password = password
+        self.blogs = blogs
 
 @app.route("/", methods=["POST", "GET"])
 def index():
@@ -45,6 +58,8 @@ def new_post():
     if request.method == "POST":
         blog_title = request.form["blog_title"]
         blog_post = request.form["blog_post"]
+        owner_id = request.form["owner_id"]
+
         error_title = ""
         error_post = ""        
 
@@ -53,7 +68,7 @@ def new_post():
         if blog_post.strip(" ") == "":
             error_post = "Please add you post."
 
-        new_post = Blog(blog_title, blog_post)
+        new_post = Blog(blog_title, blog_post, owner_id)
 
         if error_title == "" and error_post == "":
             db.session.add(new_post)
@@ -62,7 +77,7 @@ def new_post():
             return redirect(link)
 
         else:
-            return render_template("new_post.html", blog_title=blog_title, blog_post=blog_post, error_post=error_post, error_title=error_title)
+            return render_template("new_post.html", blog_title=blog_title, blog_post=blog_post, owner_id=owner_id, error_post=error_post, error_title=error_title)
 
     else:
         return render_template('new_post.html')
