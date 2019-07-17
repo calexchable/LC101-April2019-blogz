@@ -16,23 +16,22 @@ class Blog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     blog_title = db.Column(db.String(255))
     blog_post = db.Column(db.String(99999))
-    owner_id = db.Column(db.Integer, db.ForeignKey(User.id))
+    owner_id = db.Column(db.Integer, db.ForeignKey("User.id"))
 
-    def __init__(self, blog_title, blog_post):
+    def __init__(self, blog_title, blog_post, owner_id):
         self.blog_title = blog_title
         self.blog_post = blog_post
         self.owner = owner
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(255))
+    username = db.Column(db.String(255), unique=True)
     password = db.Column(db.String(255))
     blogs = db.relationship("Blog", backref = "owner")
 
-    def __init__(self, username, password, blogs)
+    def __init__(self, username, password, blogs):
         self.username = username
         self.password = password
-        self.blogs = blogs
 
 @app.route("/", methods=["POST", "GET"])
 def index():
