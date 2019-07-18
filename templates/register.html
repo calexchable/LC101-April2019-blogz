@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+    
+{% block content %}
+
+    <body>
+        <h1>Register</h1>
+        <form method="POST">
+            <label for="username">Username:
+                <input name="username" type="text" value="{{username}}" />
+            </label>
+            <p class="error">{{username_error}}</p>
+
+            <br><label for="password">Password:
+                <input name="password" type="password" value="" />
+            </label>
+            <p class="error">{{password_error}}</p>
+            
+            <br><label for="verify">Verify Password:
+                <input name="verify" type="password" value="" />
+            </label>
+            <p class="error">{{verify_error}}</p>
+
+            <br><label for="email">Email (optional):
+                <input name="email" type="text" value="" />
+            </label>
+            <p class="error">{{email_error}}</p>
+
+            <br><input type="submit" value="Submit" />
+        </form>
+    </body>
+
+{% endblock %}

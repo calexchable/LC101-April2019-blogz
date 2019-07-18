@@ -18,7 +18,7 @@ class Blog(db.Model):
     blog_post = db.Column(db.String(99999))
     owner_id = db.Column(db.Integer, db.ForeignKey("User.id"))
 
-    def __init__(self, blog_title, blog_post, owner_id):
+    def __init__(self, blog_title, blog_post, owner):
         self.blog_title = blog_title
         self.blog_post = blog_post
         self.owner = owner
@@ -33,11 +33,36 @@ class User(db.Model):
         self.username = username
         self.password = password
 
-@app.route("/", methods=["POST", "GET"])
+    def __repr__(self):
+        return str(self.username)
+
+@app.route("/")
 def index():
-    all_posts = Blog.query.all()
+    return redirect("/blog")
+
+@app.route("/login", methods=["POST", "GET"])
+def login():
+    username = ""
+    username_error = ""
+    password_error = ""
+
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        returning_user = User.query.filter_by(username=username).first()
+
+        if username != returning_user:
+            username_error = "Invalid Username."
+
+        else:
+            if password == "":
+                password_error = "Please enter your password."
+            elif re_user.password != password:
+                password_error = "Invalid Password"
     
-    return render_template("blog.html", all_posts=all_posts)
+    return render_template("login.html", title="Login", username=username, username_error=username_error, password_error=password_error)
+
+
 
 @app.route("/blog")
 def single_blog():
