@@ -49,20 +49,73 @@ def login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        returning_user = User.query.filter_by(username=username).first()
+        existing_user = User.query.filter_by(username=username).first()
 
-        if username != returning_user:
+        if username != existing_user:
             username_error = "Invalid Username."
 
         else:
             if password == "":
                 password_error = "Please enter your password."
-            elif re_user.password != password:
+            elif existing_user.password != password:
                 password_error = "Invalid Password"
     
-    return render_template("login.html", title="Login", username=username, username_error=username_error, password_error=password_error)
+    return render_template("login.html", title="Login",username=username, username_error=username_error, password_error=password_error)
 
+@app.route("/register", methods=["POST", "GET"])
+def register():
+    username = ""
+    username_error = ""
+    password_error = ""
+    verify_error = ""
+    
+    if request.method == "POST":
+        username = request.form["username"]
+        username_error = ""
+        
+        if username == "":
+            username_error = "Please enter a username."
+        elif len(username) < 3 or len(username) > 20:
+            username = ""
+            username_error = "Username must contain between 3 and 20 characters."
+        elif " " in username:
+            username = ""
+            username = error = "Username cannot contain any spaces."
 
+        password = request.form["password"]
+        password_error = ""
+
+        if password == "":
+            password_error = "Please enter a valid Password."
+        elif len(password) < 3 or len(password) > 20:
+            password = ""
+            password_error = "Password must contain between 3 and 20 characters."
+        elif " " in password:
+            password = ""
+            password_error = "Password must not contain any spaces."
+        
+        verify = request.form["verify"]
+        verify_error = ""
+
+        if verify == "":
+            verify_error = "Please validate your password."
+        elif verify != password:
+            verify = ""
+            verify_error = "Passwords do not match. Please re-enter your password."
+        
+        exisiting_user = User.query.filter_by(username=username).first
+        if username == exisiting_user:
+            username_error = "Username already exists. Please re-enter a new username."
+            username = ""
+
+        if username_error == "" and password_error == "" and verify_error == "":
+            new_user = User(username, password)
+            db.session.add(new_user)
+            db.session.commit()
+            session["user"] = new_user.username
+            return redirect("/blog")
+
+    return render_template("register.html", username=username, username_error=username_error, password_error=password_error, verify_error=verify_error)
 
 @app.route("/blog")
 def single_blog():
