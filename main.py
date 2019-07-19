@@ -186,9 +186,9 @@ def new_post():
             blog_id = Blog.query.order_by(Blog.id.desc()).first()
             user = owner
 
-            return redirect("/blog?id={}&user={}".format(blog_id.id, user.username))
+        return redirect("/blog?id={}&user={}".format(blog_id.id, user.username))
 
-        return render_template("new_post.html", blog_title=blog_title, blog_post=blog_post, error_post=error_post, error_title=error_title)
+    return render_template("newpost.html", blog_title=blog_title, blog_post=blog_post, error_post=error_post, error_title=error_title)
 
 @app.route("/logout")
 def logout():
