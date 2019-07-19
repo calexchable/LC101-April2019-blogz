@@ -145,32 +145,37 @@ def blog_list():
 
 @app.route("/newpost", methods=["POST", "GET"])
 def new_post():
+
+    blog_title = ""
+    blog_post = ""
+    
+    error_title = ""
+    error_post = ""  
+        
+    owner = User.query.filter_by(username = session["username"]).first()
+
     if request.method == "POST":
+
         blog_title = request.form["blog_title"]
         blog_post = request.form["blog_post"]
-        owner_id = request.form["owner_id"]
-
-        error_title = ""
-        error_post = ""        
 
         if blog_title.strip(" ") == "":
             error_title = "Blog Title cannot be left blank."
+
         if blog_post.strip(" ") == "":
             error_post = "Please add you post."
 
-        new_post = Blog(blog_title, blog_post, owner_id)
-
         if error_title == "" and error_post == "":
+
+            new_post = Blog(blog_title, blog_post, owner)
             db.session.add(new_post)
             db.session.commit()
-            link = "/blog?id=" + str(new_post.id)
-            return redirect(link)
+            blog_id = Blog.query.order_by(Blog.id.desc()).first()
+            user = owner
 
-        else:
-            return render_template("new_post.html", blog_title=blog_title, blog_post=blog_post, owner_id=owner_id, error_post=error_post, error_title=error_title)
+            return redirect("/blog?id={}&user={}".format(blog_id.id, user.username))
 
-    else:
-        return render_template('new_post.html')
+        return render_template("new_post.html", blog_title=blog_title, blog_post=blog_post, error_post=error_post, error_title=error_title)
         
 if __name__ == '__main__':
     app.run()
