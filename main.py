@@ -37,6 +37,13 @@ class User(db.Model):
     def __repr__(self):
         return str(self.username)
 
+@app.before_request
+def require_login():
+    allowed_routes = ["login", "register", "index"]
+    if request.endpoint not in allowed_routes and "username" not in session:
+        return redirect("/login")
+
+
 @app.route("/", methods=["POST", "GET"])
 def index():
     users = User.query.all()
@@ -176,6 +183,11 @@ def new_post():
             return redirect("/blog?id={}&user={}".format(blog_id.id, user.username))
 
         return render_template("new_post.html", blog_title=blog_title, blog_post=blog_post, error_post=error_post, error_title=error_title)
-        
+
+@app.route("/logout")
+def logout():
+    del session["username"]
+    redturn redirect("/blog")
+
 if __name__ == '__main__':
     app.run()
