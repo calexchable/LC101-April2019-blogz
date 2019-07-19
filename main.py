@@ -8,7 +8,7 @@ app = Flask(__name__)
 app.config["DEBUG"] = True
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://blogz:password@localhost:8889/blogz"
 app.config["SQLALCHEMY_ECHO"] = True
-
+app.secret_key = "y2k+9-11g0vp10y"
 
 db = SQLAlchemy(app)
 
@@ -29,10 +29,9 @@ class User(db.Model):
     password = db.Column(db.String(255))
     blogs = db.relationship("Blog", backref = "owner")
 
-    def __init__(self, username, password, blogs):
+    def __init__(self, username, password):
         self.username = username
         self.password = password
-        self.blogs = blogs
 
     def __repr__(self):
         return str(self.username)
@@ -77,11 +76,13 @@ def register():
     username_error = ""
     password_error = ""
     verify_error = ""
-    
+
     if request.method == "POST":
         username = request.form["username"]
         username_error = ""
-        
+
+        exisiting_user = User.query.filter_by(username=username).first()
+
         if username == "":
             username_error = "Please enter a username."
         elif len(username) < 3 or len(username) > 20:
@@ -89,7 +90,10 @@ def register():
             username_error = "Username must contain between 3 and 20 characters."
         elif " " in username:
             username = ""
-            username = error = "Username cannot contain any spaces."
+            username_error = "Username cannot contain any spaces."
+        elif username == exisiting_user:
+            username = ""
+            username_error = "Username already exisits. Please select another username."
 
         password = request.form["password"]
         password_error = ""
@@ -112,17 +116,16 @@ def register():
             verify = ""
             verify_error = "Passwords do not match. Please re-enter your password."
         
-        exisiting_user = User.query.filter_by(username=username).first
-        if username == exisiting_user:
-            username_error = "Username already exists. Please re-enter a new username."
-            username = ""
-
         if username_error == "" and password_error == "" and verify_error == "":
-            new_user = User(username, password)
-            db.session.add(new_user)
-            db.session.commit()
-            session["user"] = new_user.username
-            return redirect("/blog")
+            if not exisiting_user:
+                new_user = User(username, password)
+                db.session.add(new_user)
+                db.session.commit()
+                session["user"] = new_user.username
+                return redirect("/new_post")
+
+            else:
+                username_error = "Username in use, select another."
 
     return render_template("register.html", username=username, username_error=username_error, password_error=password_error, verify_error=verify_error)
 
@@ -187,7 +190,7 @@ def new_post():
 @app.route("/logout")
 def logout():
     del session["username"]
-    redturn redirect("/blog")
+    return redirect("/blog")
 
 if __name__ == '__main__':
     app.run()
