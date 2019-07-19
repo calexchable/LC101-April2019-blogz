@@ -3,6 +3,9 @@ from flask_sqlalchemy import SQLAlchemy
 import pymysql
 import cgi
 import os
+import User
+import Blog
+
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -16,7 +19,7 @@ class Blog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     blog_title = db.Column(db.String(255))
     blog_post = db.Column(db.String(99999))
-    owner_id = db.Column(db.Integer, db.ForeignKey("User.id"))
+    owner_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
     def __init__(self, blog_title, blog_post, owner):
         self.blog_title = blog_title
@@ -32,13 +35,15 @@ class User(db.Model):
     def __init__(self, username, password, blogs):
         self.username = username
         self.password = password
+        self.blogs = blogs
 
     def __repr__(self):
         return str(self.username)
 
-@app.route("/")
+@app.route("/", methods=["POST", "GET"])
 def index():
-    return redirect("/blog")
+    users = User.query.all()
+    return render_template("index.html", users=users
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
