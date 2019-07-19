@@ -59,15 +59,18 @@ def login():
         password = request.form["password"]
         existing_user = User.query.filter_by(username=username).first()
 
-        if username != existing_user:
+        if not existing_user:
             username_error = "Invalid Username."
 
-        else:
-            if password == "":
-                password_error = "Please enter your password."
-            elif existing_user.password != password:
-                password_error = "Invalid Password"
+        if password == "":
+            password_error = "Please enter your password."
+        elif existing_user.password != password:
+            password_error = "Invalid Password"
     
+        if existing_user and existing_user.password == password:
+            session["username"] = username
+            return redirect("/newpost")
+
     return render_template("login.html", title="Login",username=username, username_error=username_error, password_error=password_error)
 
 @app.route("/register", methods=["POST", "GET"])
