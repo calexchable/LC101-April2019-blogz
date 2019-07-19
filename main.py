@@ -1,11 +1,8 @@
-from flask import Flask, request, redirect, render_template
+from flask import Flask, request, redirect, render_template, session
 from flask_sqlalchemy import SQLAlchemy
 import pymysql
 import cgi
 import os
-import User
-import Blog
-
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -43,7 +40,7 @@ class User(db.Model):
 @app.route("/", methods=["POST", "GET"])
 def index():
     users = User.query.all()
-    return render_template("index.html", users=users
+    return render_template("index.html", users=users)
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
@@ -123,17 +120,28 @@ def register():
     return render_template("register.html", username=username, username_error=username_error, password_error=password_error, verify_error=verify_error)
 
 @app.route("/blog")
-def single_blog():
-    post_id = request.args.get("id")
+def blog_list():
+    title = "Blogzzz"
 
-    if post_id:
-        single_post = Blog.query.get(post_id)
-        return render_template("single_post.html", single_post=single_post)
+    if session:
+        owner = User.query.filter_by(username = session["username"]).first()
+
+    if "id" in request.args:
+        post_id = request.args.get("id")
+        blog = Blog.query.filter_by(id = post_id).all()
+
+        return render_template("blog.html", title=title, blog=blog, post_id = post_id)
+    
+    elif "user" in request.args:
+        user_id = request.args.get("user")
+        blog = Blog.query.filter_by(owner_id = user_id).all()
+
+        return render_template("blog.html", title=title, blog=blog)
 
     else:
-        all_posts = Blog.query.all()
+        blog = Blog.query.all()
 
-        return render_template("blog.html", all_posts=all_posts)
+        return render_template("blog.html", title=title, blog=blog)
 
 @app.route("/newpost", methods=["POST", "GET"])
 def new_post():
