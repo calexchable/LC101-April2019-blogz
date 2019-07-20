@@ -33,12 +33,9 @@ class User(db.Model):
         self.username = username
         self.password = password
 
-    def __repr__(self):
-        return str(self.username)
-
 @app.before_request
 def require_login():
-    allowed_routes = ["login", "register", "index"]
+    allowed_routes = ["login", "register", "index", "blog_list"]
     if request.endpoint not in allowed_routes and "username" not in session:
         return redirect("/login")
 
@@ -135,6 +132,9 @@ def register():
 @app.route("/blog")
 def blog_list():
     title = "Blogzzz"
+    post_id = request.args.get("id")
+
+
 
     if session:
         owner = User.query.filter_by(username = session["username"]).first()
@@ -143,17 +143,16 @@ def blog_list():
         post_id = request.args.get("id")
         blog = Blog.query.filter_by(id = post_id).all()
 
-        return render_template("blog.html", title=title, blog=blog, post_id = post_id)
+        return render_template("blog.html", title=title, blog=blog, post_id=post_id)
     
     elif "user" in request.args:
         user_id = request.args.get("user")
-        blog = Blog.query.filter_by(owner_id = user_id).all()
+        blog = Blog.query.filter_by(owner_id=user_id).all()
 
         return render_template("blog.html", title=title, blog=blog)
 
     else:
-        blog = Blog.query.all()
-
+        blog = Blog.query.order_by(Blog.id.desc()).all()
         return render_template("blog.html", title=title, blog=blog)
 
 @app.route("/newpost", methods=["POST", "GET"])
