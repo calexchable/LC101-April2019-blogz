@@ -134,10 +134,8 @@ def blog_list():
     title = "Blogzzz"
     post_id = request.args.get("id")
 
-
-
-    if session:
-        owner = User.query.filter_by(username = session["username"]).first()
+    if "username" in session:
+        owner = User.query.filter_by(username=session["username"]).first()
 
     if "id" in request.args:
         post_id = request.args.get("id")
@@ -192,6 +190,7 @@ def new_post():
 @app.route("/logout")
 def logout():
     del session["username"]
+
     return redirect("/blog")
 
 if __name__ == '__main__':
